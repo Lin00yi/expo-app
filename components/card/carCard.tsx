@@ -1,23 +1,33 @@
 // CarCard.tsx
 import React from 'react';
-import { Box, Image, Text, VStack, HStack, Button } from 'native-base';
+import { Box, Image,  VStack, HStack, Button } from 'native-base';
+import {ThemedText} from "@/components/ThemedText";
+import {StyleSheet, type ViewProps} from "react-native";
+import {useThemeColor} from "@/hooks/useThemeColor";
 
-interface Car {
+interface CarProps {
     name: string;
     brand: string;
     imageUrl: string;
     description: string;
 }
 
-const CarCard: React.FC<{ car: Car }> = ({ car }) => {
+export type ThemedViewProps = ViewProps & {
+    car: CarProps;
+    lightColor?: string;
+    darkColor?: string;
+};
+
+const CarCard: React.FC<ThemedViewProps> = ({ car,style,lightColor,darkColor,...otherProps }) => {
+    const backgroundColor = useThemeColor({ light: lightColor, dark: darkColor }, 'background');
     return (
         <Box
-            borderWidth={1}
-            borderColor="coolGray.300"
             borderRadius="md"
             overflow="hidden"
             shadow={2}
             mb={4}
+            style={[{ backgroundColor }, style]}
+            {...otherProps}
         >
             <Image
                 source={{ uri: car.imageUrl }}
@@ -27,9 +37,9 @@ const CarCard: React.FC<{ car: Car }> = ({ car }) => {
                 resizeMode="cover"
             />
             <VStack p={4}>
-                <Text fontSize="lg" fontWeight="bold">{car.name}</Text>
-                <Text fontSize="md" color="gray.600">{car.brand}</Text>
-                <Text mt={2}>{car.description}</Text>
+                <ThemedText type='title'>{car.name}</ThemedText>
+                <ThemedText type="subtitle">{car.brand}</ThemedText>
+                <ThemedText type='default' style={styles.desc}>{car.description}</ThemedText>
                 <HStack mt={4} space={2}>
                     <Button colorScheme="blue">View Details</Button>
                     <Button colorScheme="green">Buy Now</Button>
@@ -38,5 +48,14 @@ const CarCard: React.FC<{ car: Car }> = ({ car }) => {
         </Box>
     );
 };
+
+
+const styles = StyleSheet.create({
+    desc: {
+        marginLeft: 2,
+    }
+});
+
+
 
 export default CarCard;

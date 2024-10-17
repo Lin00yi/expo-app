@@ -1,5 +1,6 @@
 import React from "react";
-import {StyleSheet, View} from "react-native";
+import {StyleSheet} from "react-native";
+import {ThemedView} from "@/components/ThemedView";
 
 const styles = StyleSheet.create({
     container: {
@@ -10,9 +11,9 @@ const styles = StyleSheet.create({
 
 const LayoutView: React.FC<{ children:React.ReactNode }> = ({ children})=> {
     return (
-        <View style={styles.container}>
+        <ThemedView style={styles.container}>
             {children}
-        </View>
+        </ThemedView>
     );
 };
 
