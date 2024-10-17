@@ -8,8 +8,8 @@ import 'react-native-reanimated';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import {MessageRegistrar} from "@/hooks/messageHelper";
 import {NativeBaseProvider} from "native-base";
-import {colorModeManager} from "@/theme";
-import {createTheme} from "@/theme/create-theme";
+import {colorModeManager} from "@/native-base-theme";
+import {createTheme} from "@/native-base-theme/create-theme";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
