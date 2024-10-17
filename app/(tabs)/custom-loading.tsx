@@ -1,8 +1,8 @@
 
-import React, {useEffect, useState} from 'react';
-import {FlatList, RefreshControl, StyleSheet, View} from 'react-native';
+import React, {useState} from 'react';
+import {FlatList, NativeScrollEvent, NativeSyntheticEvent, RefreshControl, StyleSheet, View} from 'react-native';
 import useRefresh from "@/hooks/useRefresh";
-import {Button, Spinner} from "native-base";
+import {Button, ScrollView} from "native-base";
 import CarCard from "@/components/card/carCard";
 import {smsEmailApi} from "@/api";
 import {ThemedText} from "@/components/ThemedText";
@@ -15,7 +15,6 @@ import Animated, {
     useSharedValue,
     withTiming
 } from "react-native-reanimated";
-import useLoadMore from "@/hooks/useLoadMore";
 import {FontAwesome} from "@expo/vector-icons";
 
 
@@ -88,15 +87,10 @@ const cars = [
 
 
 export default function Test(){
-    const { data:initialData, refreshing, onRefresh } = useRefresh(cars);
+    const { data, refreshing, onRefresh } = useRefresh(cars);
     const [apiResponse, setApiResponse] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
-    const [filteredCars, setFilteredCars] = useState<Car[]>([]);
-
-
-    useEffect(() => {
-        setFilteredCars(initialData);
-    }, [initialData]);
+    const [filteredCars, setFilteredCars] = useState(cars);
 
     // 使用共享值捕捉滚动位置
     const scrollY = useSharedValue(0);
@@ -136,10 +130,6 @@ export default function Test(){
         }
     };
 
-    /**
-     * @author huaqiang
-     * @description 请求获取数据
-     */
     const fetchData = async () => {
         // 模拟网络请求
         return new Promise<Car[]>((resolve) => {
@@ -172,44 +162,6 @@ export default function Test(){
         });
     };
 
-    /**
-     * @author huaqiang
-     * @description 请求更多数据
-     */
-    const fetchMoreCars = async () => {
-        return new Promise<Car[]>((resolve) => {
-            setTimeout(() => {
-                resolve([
-                    {
-                        id: String(Date.now() + Math.random()),
-                        name: 'Ford Mustang',
-                        brand: 'Ford',
-                        imageUrl: 'https://www.ford.es/content/dam/guxeu/es/home/billboard/2024/ford-homepage-es-white-mustang_mach-e-21x9_2160x925-hpr-bb.jpg.renditions.extra-large.jpeg',
-                        description: 'A powerful American muscle car',
-                    },
-                    {
-                        id: String(Date.now() + Math.random()),
-                        name: 'Chevrolet Camaro',
-                        brand: 'Chevrolet',
-                        imageUrl: 'https://www.ford.es/content/dam/guxeu/es/home/billboard/2024/ford-homepage-es-white-mustang_mach-e-21x9_2160x925-hpr-bb.jpg.renditions.extra-large.jpeg',
-                        description: 'A stylish sports car with great performance',
-                    },
-                ]);
-            }, 2000);
-        });
-    };
-
-
-    const { moreData, loading: loadMoreLoading, hasMore, loadMore } = useLoadMore(fetchMoreCars);
-
-
-    // 合并数据
-    useEffect(() => {
-        if (moreData) {
-            setFilteredCars((prev) => [...prev, ...moreData]);
-        }
-    }, [moreData]);
-
 
     const handleSearch = (query:string) => {
         const filtered = cars.filter((car) =>
@@ -224,63 +176,73 @@ export default function Test(){
         // 实现发布的逻辑
     };
 
+    // 滚动事件的处理函数
+    const handleScrollBeginDrag = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+        // 开始拖动滚动时触发
+        console.log('Scroll started');
+        onRefresh(fetchData)// 在此调用 fetchData 函数
+    };
+
+
     return (
         <LayoutView>
             {/* 使用 Animated.View 包裹 TopSearchBar */}
             <Animated.View style={[topSearchBarAnimatedStyle]}>
                 <TopSearchBar onSearch={handleSearch} onPublish={handlePublish} />
             </Animated.View>
-            <Animated.FlatList
-                style={styles.list}
-                data={filteredCars}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
-                    <CarCard car={item} />
-                )}
-                onEndReached={hasMore && !loadMoreLoading ? loadMore : null} // 只有在有更多数据且当前未加载时才触发加载更多
-                onEndReachedThreshold={0} // 调整为 0.5，表示要距离底部还有 50% 的距离时才加载更多
-                refreshControl={
-                    <RefreshControl
-                        title='拼命加载中...'
-                        refreshing={refreshing}
-                        onRefresh={() => onRefresh(fetchData)}
-                        titleColor="#333"  // 设置标题的颜色
-                    />
-                }
-                onScroll={scrollHandler}
-                scrollEventThrottle={16} // 确保滚动事件频率
-                ListFooterComponent={
-                    <>
-                        {/*<Button onPress={handleApiRequest} mt={4} isLoading={loading}>*/}
-                        {/*    测试接口*/}
-                        {/*</Button>*/}
+            {/*<Animated.FlatList*/}
+            {/*    style={styles.list}*/}
+            {/*    data={data}*/}
+            {/*    keyExtractor={(item) => item.id}*/}
+            {/*    renderItem={({ item }) => (*/}
+            {/*        <CarCard car={item} />*/}
+            {/*    )}*/}
+            {/*    refreshControl={*/}
+            {/*        <RefreshControl*/}
+            {/*            title='拼命加载中...'*/}
+            {/*            refreshing={refreshing}*/}
+            {/*            onRefresh={() => onRefresh(fetchData)}*/}
+            {/*            titleColor="#333"  // 设置标题的颜色*/}
+            {/*        />*/}
+            {/*    }*/}
+            {/*    onScroll={scrollHandler}*/}
+            {/*    scrollEventThrottle={16} // 确保滚动事件频率*/}
+            {/*    ListFooterComponent={*/}
+            {/*        <>*/}
+            {/*            <Button onPress={handleApiRequest} mt={4} isLoading={loading}>*/}
+            {/*                测试接口*/}
+            {/*            </Button>*/}
 
-                        {/*/!* 显示 API 响应结果 *!/*/}
-                        {/*{apiResponse && (*/}
-                        {/*    <ThemedText>*/}
-                        {/*        API Response:*/}
-                        {/*        {apiResponse}*/}
-                        {/*    </ThemedText>*/}
-                        {/*)}*/}
-                        {hasMore ? (
-                            loadMoreLoading ? (
-                                <View style={{ alignItems: 'center', paddingBottom: 16, display: 'flex', flexDirection: 'row', gap: 8, justifyContent: 'center' }}>
-                                    <ThemedText>正在加载中</ThemedText>
-                                    <Spinner color="blue" />
-                                </View>
-                            ) : (
-                                <View style={{ alignItems: 'center', paddingBottom: 16 }}>
-                                    <ThemedText>上滑加载更多</ThemedText>
-                                </View>
-                            )
-                        ) : (
-                            <View style={{ alignItems: 'center', paddingBottom: 16 }}>
-                                <ThemedText>没有更多数据了</ThemedText>
-                            </View>
-                        )}
-                    </>
-                }
-            />
+            {/*            /!* 显示 API 响应结果 *!/*/}
+            {/*            {apiResponse && (*/}
+            {/*                <ThemedText>*/}
+            {/*                    API Response:*/}
+            {/*                    {apiResponse}*/}
+            {/*                </ThemedText>*/}
+            {/*            )}*/}
+            {/*        </>*/}
+            {/*    }*/}
+            {/*/>*/}
+            <ScrollView
+                contentContainerStyle={{ flexGrow: 1 }}
+                onScrollBeginDrag={handleScrollBeginDrag}  // 开始滚动时触发刷新
+            >
+                {refreshing ? (
+                    <View style={{ alignItems: 'center', padding: 16 }}>
+                        {/* 自定义加载图标 */}
+                        <FontAwesome name="spinner" size={40} color="blue" />
+                        <ThemedText>正在加载中...</ThemedText>
+                    </View>
+                ) : (
+                    <View style={{ padding: 16 }}>
+                        <ThemedText>下拉刷新数据</ThemedText>
+                    </View>
+                )}
+
+                {cars?.map((car) => (
+                    <CarCard key={car.id} car={car} />
+                ))}
+            </ScrollView>
         </LayoutView>
     );
 };
