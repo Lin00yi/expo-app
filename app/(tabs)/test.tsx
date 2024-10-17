@@ -2,11 +2,20 @@
 import React, {useState} from 'react';
 import {FlatList, RefreshControl, StyleSheet} from 'react-native';
 import useRefresh from "@/hooks/useRefresh";
-import {Button, ScrollView} from "native-base";
+import {Button} from "native-base";
 import CarCard from "@/components/card/carCard";
 import {smsEmailApi} from "@/api";
 import {ThemedText} from "@/components/ThemedText";
 import LayoutView from "@/components/Layout/LayoutView";
+import TopSearchBar from "@/components/TopSearchBar";
+import Animated, {
+    interpolate,
+    useAnimatedScrollHandler,
+    useAnimatedStyle,
+    useSharedValue,
+    withTiming
+} from "react-native-reanimated";
+
 
 interface Car {
     id:string,
@@ -80,6 +89,28 @@ export default function Test(){
     const { data, refreshing, onRefresh } = useRefresh(cars);
     const [apiResponse, setApiResponse] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const [filteredCars, setFilteredCars] = useState(cars);
+
+    // 使用共享值捕捉滚动位置
+    const scrollY = useSharedValue(0);
+
+    const scrollHandler = useAnimatedScrollHandler({
+        onScroll: (event) => {
+            scrollY.value = event.contentOffset.y;
+        },
+    });
+
+    // Animated style for the TopSearchBar (e.g., fade out or slide up)
+    const topSearchBarAnimatedStyle = useAnimatedStyle(() => {
+        // 计算滚动时的透明度
+        const opacity = refreshing
+            ? 0 // 当 refreshing 为 true 时，直接将 opacity 设置为 0
+            : interpolate(scrollY.value, [0, -100], [1, 0], 'clamp'); // 否则根据滚动位置插值计算
+
+        return {
+            opacity: withTiming(opacity, { duration: 100 }), // 使用动画改变透明度
+        };
+    });
 
     // 模拟API请求的逻辑
     const handleApiRequest = async () => {
@@ -131,9 +162,27 @@ export default function Test(){
         });
     };
 
+
+    const handleSearch = (query:string) => {
+        const filtered = cars.filter((car) =>
+            car.name.toLowerCase().includes(query.toLowerCase()) ||
+            car.brand.toLowerCase().includes(query.toLowerCase())
+        );
+        setFilteredCars(filtered);
+    };
+
+    const handlePublish = () => {
+        console.log('发布按钮被点击');
+        // 实现发布的逻辑
+    };
+
     return (
         <LayoutView>
-            <FlatList
+            {/* 使用 Animated.View 包裹 TopSearchBar */}
+            <Animated.View style={[topSearchBarAnimatedStyle]}>
+                <TopSearchBar onSearch={handleSearch} onPublish={handlePublish} />
+            </Animated.View>
+            <Animated.FlatList
                 style={styles.list}
                 data={data}
                 keyExtractor={(item) => item.id}
@@ -142,10 +191,13 @@ export default function Test(){
                 )}
                 refreshControl={
                     <RefreshControl
+                        title='拼命加载中...'
                         refreshing={refreshing}
                         onRefresh={() => onRefresh(fetchData)}
                     />
                 }
+                onScroll={scrollHandler}
+                scrollEventThrottle={16} // 确保滚动事件频率
                 ListFooterComponent={
                     <>
                         <Button onPress={handleApiRequest} mt={4} isLoading={loading}>
@@ -169,7 +221,7 @@ export default function Test(){
 
 const styles = StyleSheet.create({
     list: {
-        padding: 10,
+        padding: 8,
     }
 });
 
