@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {Box, Input, Icon, Button} from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
-import {Platform, StyleSheet} from "react-native";
+import {Platform} from "react-native";
 
 interface TopSearchBarProps {
     onSearch: (searchQuery: string) => void;
