@@ -37,12 +37,12 @@ const CarCard: React.FC<ThemedViewProps> = ({ car,style,lightColor,darkColor,...
                 resizeMode="cover"
             />
             <VStack p={4}>
-                <ThemedText type='title'>{car.name}</ThemedText>
-                <ThemedText type="subtitle">{car.brand}</ThemedText>
+                <ThemedText type='large'>{car.name}</ThemedText>
+                <ThemedText type="middle">{car.brand}</ThemedText>
                 <ThemedText type='default' style={styles.desc}>{car.description}</ThemedText>
                 <HStack mt={4} space={2}>
-                    <Button colorScheme="blue">View Details</Button>
-                    <Button colorScheme="green">Buy Now</Button>
+                    <Button variant='solid'>View Details</Button>
+                    <Button variant='outline'>Buy Now</Button>
                 </HStack>
             </VStack>
         </Box>
