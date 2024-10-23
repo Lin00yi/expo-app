@@ -6,10 +6,11 @@ import React, { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
-import {MessageRegistrar} from "@/hooks/messageHelper";
-import {NativeBaseProvider} from "native-base";
-import {colorModeManager} from "@/native-base-theme";
-import {createTheme} from "@/native-base-theme/create-theme";
+import { MessageRegistrar } from '@/utils/messageHelper';
+import { NativeBaseProvider } from 'native-base';
+import { colorModeManager } from '@/native-base-theme';
+import { createTheme } from '@/native-base-theme/create-theme';
+import '@/api/apiHandler';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -33,14 +34,14 @@ export default function RootLayout() {
   }
 
   return (
-      <NativeBaseProvider colorModeManager={colorModeManager} theme={theme}>
-        <MessageRegistrar/>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="+not-found" />
-          </Stack>
-        </ThemeProvider>
-      </NativeBaseProvider>
+    <NativeBaseProvider colorModeManager={colorModeManager} theme={theme}>
+      <MessageRegistrar />
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="+not-found" />
+        </Stack>
+      </ThemeProvider>
+    </NativeBaseProvider>
   );
 }

@@ -9,10 +9,14 @@ import {isEncrypt} from "@/constants/Common";
 
 import errorHandler from './errorHandler';
 import {decryptData, encryptData} from "@/utils/node-gcm";
-import {message} from "@/hooks/messageHelper";
+import {message} from "@/utils/messageHelper";
+import eventEmitter from './eventEmitter';
+
 
 // 创建 JSONBigInt 实例
 const jsonBigInt = new JSONBigInt();
+
+
 
 
 // 创建 Axios 实例
@@ -36,7 +40,7 @@ const axiosInstance = axios.create({
 
 // 请求拦截器
 axiosInstance.interceptors.request.use(
-    (config: any) => {
+    async(config: any) => {
 
         // 设置 Content-Type 为 application/json 仅在 POST 请求时并且不存在 Content-Type 时
         if (config.method === 'post' && !config.headers['Content-Type']) {
@@ -49,7 +53,7 @@ axiosInstance.interceptors.request.use(
             lang
         };
 
-        const token = AsyncStorage.get('tokenInfo');
+        const token = await AsyncStorage.get('tokenInfo');
         // if (token)
         //     // 确保 headers 是一个对象，而不是 AxiosHeaders 类型
         //     config.headers = {
@@ -64,7 +68,7 @@ axiosInstance.interceptors.request.use(
         return config;
     },
     (error) => {
-        console.error('请求时 error', error);
+        // console.error('请求时 error', error);
         // 处理请求错误
         return Promise.reject(error)
     }
@@ -72,7 +76,7 @@ axiosInstance.interceptors.request.use(
 
 // 响应拦截器
 axiosInstance.interceptors.response.use(
-    (response: AxiosResponse) => {
+    async(response: AxiosResponse) => {
         let res = null;
         const isTransformResponse = response.headers?.['X-Transform-Response'];
 
@@ -86,20 +90,18 @@ axiosInstance.interceptors.response.use(
         if (res.data && (res.data.code === 20001 || res.data.code === 20003)) {
             const errorMessage = res.data.message || '发生未知错误';
             message(errorMessage, 'error');
+            eventEmitter.emit('API:SYSTEM_UNKNOWN_ERROR', errorMessage);
             return Promise.reject(errorMessage);
         }
         if(res.data && res.data.code === 20002){
             const errorMessage = res.data.message || '登录过期，请重新登录';
-            message(errorMessage, 'error');
-            AsyncStorage.remove('tokenInfo');
-            // 重定向到登录页
-            window.location.href = '/'
+            eventEmitter.emit('API:SYSTEM_UN_AUTH', errorMessage);
             return Promise.reject(errorMessage);
         }
         return res;
     },
     (error:AxiosError) => {
-        console.error('响应时 error', error);
+        // console.error('响应时 error', error);
         if (axios.isCancel(error)) {
             return Promise.reject(error);
         }

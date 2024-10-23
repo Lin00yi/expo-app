@@ -41,8 +41,8 @@ const CarCard: React.FC<ThemedViewProps> = ({ car,style,lightColor,darkColor,...
                 <ThemedText type="middle">{car.brand}</ThemedText>
                 <ThemedText type='default' style={styles.desc}>{car.description}</ThemedText>
                 <HStack mt={4} space={2}>
-                    <Button variant='solid'>View Details</Button>
-                    <Button variant='outline'>Buy Now</Button>
+                    <Button variant='solid' size='sm'>查看详情</Button>
+                    <Button variant='outline' size='sm'>立即购买</Button>
                 </HStack>
             </VStack>
         </Box>
