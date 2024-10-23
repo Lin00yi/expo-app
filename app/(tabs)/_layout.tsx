@@ -3,14 +3,13 @@ import React from 'react';
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { ColorSchemeName, Platform, StyleSheet, SafeAreaView } from 'react-native';
+import { ColorSchemeName, Platform, StyleSheet } from 'react-native';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   console.log('colorScheme', colorScheme); // --> dark | light
 
   return (
-    // <SafeAreaView style={styles(colorScheme).container}>
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
@@ -60,18 +59,11 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
-    /*</SafeAreaView>*/
   );
 }
 
 const styles = (colorScheme: ColorSchemeName) =>
   StyleSheet.create({
-    container: {
-      flex: 1,
-      // justifyContent: 'center',
-      // backgroundColor: '#ecf0f1',
-      // padding: 8,
-    },
     tabsStyle: {
       backgroundColor: Colors[colorScheme ?? 'light'].tabBackgroundColor,
       marginHorizontal: 15,
